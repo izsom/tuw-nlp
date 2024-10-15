@@ -128,25 +128,26 @@ class UDGraph(Graph):
         return self.index_nodes(self.inferred_nodes)
 
     def subgraph(self, nodes, handle_unconnected=None):
+        # returns a fully connected version of the subgraph described by nodes by adding shortest paths between not yet connected components
         new_nodes, inferred_nodes = self._subgraph_infer_new_nodes(
             nodes, handle_unconnected
-        )
+        ) # create new nodes to make the subgraph connected
 
         # snippet from networkx docs on networkx.Graph.subgraph
         H = nx.DiGraph()
         H.add_nodes_from((n, self.G.nodes[n]) for n in new_nodes)
         H.add_edges_from(
             (n, nbr, d)
-            for n, nbrs in self.G.adj.items()
+            for n, nbrs in self.G.adj.items() # node and its neighbors packed in a dict
             if n in new_nodes
-            for nbr, d in nbrs.items()
+            for nbr, d in nbrs.items() # d is a dict of edge attributes btw n and nbr
             if nbr in new_nodes
         )
 
         for node in inferred_nodes:
             H.nodes()[node]["inferred"] = True
 
-        tok_ids_to_keep = {data.get("token_id") for node, data in H.nodes(data=True)}
+        tok_ids_to_keep = {data.get("token_id") for node, data in H.nodes(data=True)} # H.nodes() returns a dict of nodes (key) and their attributes (value)
         new_tokens = [
             tok if i + 1 in tok_ids_to_keep else None
             for i, tok in enumerate(self.tokens)

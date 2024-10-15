@@ -179,19 +179,23 @@ class GraphFormulaPatternMatcher:
         return self.path_between(undirected_graph, nodes, subgraphs)
 
     def digraph_matcher(self, graph, pattern, subgraphs, attrs=None):
+        # the subgraphs get attributes describing the how the nodes in the original graph are mapped in the subgraph
         matcher = GraphFormulaPatternMatcher.get_matcher(
             graph, pattern, self.case_sensitive, attrs=attrs
-        )
+        ) # defining basically an nx.DiGraphMatcher on graph and pattern with own defined node_matcher and edge_matcher
 
         # logging.debug(f"matching this: {pattern}")
         # logging.debug(f"matching this: {pattern.graph}")
 
         monomorphic_subgraphs = list(matcher.subgraph_monomorphisms_iter())
+        logging.info(f"The len of monomorphic_subgraphs: {len(monomorphic_subgraphs)}")
         if not len(monomorphic_subgraphs) == 0:
             for sub in monomorphic_subgraphs:
                 mapping = sub
+                 # key is the indices of the sentence of question and value is the indices of the pattern
                 logging.debug(f"{sub=}")
-                subgraph = graph.subgraph(mapping.keys()).copy()
+                subgraph = graph.subgraph(mapping.keys()).copy() # copy the matched subgraph
+                logging.info(f"{subgraph=}")
                 # copying is essential, otherwise mapping gets overwritten if a node occurs in multiple matching subgraphs
                 nx.set_node_attributes(subgraph, mapping, name="mapping")
                 subgraphs.append(subgraph)
@@ -212,25 +216,38 @@ class GraphFormulaPatternMatcher:
         return False
 
     def match(self, graph, return_subgraphs=False, attrs=None):
+        # graph is the sen_graph.Graph object
         for i, (patt, negs, key) in enumerate(self.patts):
             logging.debug(
                 "matching these:"
                 + "\n".join(graph_to_pn(G, name_attr="name") for G in patt)
+                + f"{negs=}"
+                + f"{key=}"
             )
             try:
-                neg_match = self._neg_match(graph, negs)
-
+                neg_match = self._neg_match(graph, negs) # checks if the graph and the negs are monomorphic
+                # monomorphic means that the graph and the negs have the same structure
+                logging.info(f"{neg_match=}")
                 if not neg_match:
                     subgraphs = []
                     pos_match = True
                     for p in patt:
+                        # p is the G from the above logging.debug
                         if isinstance(p, tuple):
                             if not p[0](graph, p[1], subgraphs):
                                 pos_match = False
                                 break
                         else:
+                            logging.info(f"before digrap_matcher: {graph.nodes=}")
+                            logging.info(f"before digrap_matcher: {nx.to_latex(graph)=}")
+                            logging.info(f"before digrap_matcher: {graph_to_pn(p, name_attr='name')=}")
+                            logging.info(f"before digrap_matcher: {nx.to_latex(p)=}")
+                            logging.info(f"before digrap_matcher: {subgraphs=}")
+                            logging.info(f"before digrap_matcher: {attrs=}")
                             if not self.digraph_matcher(graph, p, subgraphs, attrs):
+                                 # graph is the sentence canditate and p is the graph of the pattern (sentence gets compared to)
                                 pos_match = False
+                                logging.info(f"The pattern is not monomorph to the sentence graph.")
                                 break
 
                     if pos_match:

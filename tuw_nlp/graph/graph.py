@@ -25,7 +25,7 @@ class Graph:
             self.tokens = []
         else:
             self.tokens = tokens
-
+        # adding attributes to the graph
         self.G.graph["tokens"] = self.tokens
         self.G.graph["text"] = self.text
         self.G.graph["type"] = self.type
