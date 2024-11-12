@@ -52,7 +52,7 @@ class GraphFormulaPatternMatcher:
 
     @staticmethod
     def node_matcher(n1, n2, flags=0, attrs=None):
-        logger.debug(f"matchig these: {n1}, {n2}, {attrs=}")
+        logger.debug(f"matchig these nodes: {n1}, {n2}, {attrs=}")
         attrs = ("name",) if attrs is None else attrs
         for attr in attrs:
             if not GraphFormulaPatternMatcher._node_matcher(n1, n2, flags, attr):
@@ -69,10 +69,22 @@ class GraphFormulaPatternMatcher:
             if (n2[attr] == n1[attr] or re.match(rf"\b({n2[attr]})\b", n1[attr], flags))
             else False
         )
+    
+    @staticmethod
+    def _node_matcher_posext(n1, n2, flags, attr):
+        if n1[attr] is None or n2[attr] is None:
+            return True        
+        
+        if (n2[attr] == n1[attr] or re.match(rf"\b({n2[attr]})\b", n1[attr], flags)):
+            return True
+        # check if PROPN or PRON is the pos tag
+        if n2[attr] == "PROPN" or n2[attr] == "PRON" :
+            return True
+        
 
     @staticmethod
     def edge_matcher(e1, e2, flags):
-        logger.debug(f"matchig these: {e1}, {e2}")
+        logger.debug(f"matchig these edges: {e1}, {e2}")
         return (
             True
             if re.match(rf"\b({str(e2['color'])})\b", str(e1["color"]), flags)
@@ -107,6 +119,9 @@ class GraphFormulaPatternMatcher:
                 pos_patts = self.patt_list(patts, converter)
                 neg_graphs = self.patt_list(negs, converter)
                 self.patts.append((pos_patts, neg_graphs, key))
+                logging.info(f"{pos_patts=}")
+                logging.info(f"{neg_graphs=}")
+                logging.info(f"{key=}")
 
         self.pattern_errors = set()
 
@@ -183,7 +198,7 @@ class GraphFormulaPatternMatcher:
         matcher = GraphFormulaPatternMatcher.get_matcher(
             graph, pattern, self.case_sensitive, attrs=attrs
         ) # defining basically an nx.DiGraphMatcher on graph and pattern with own defined node_matcher and edge_matcher
-
+        logging.info(f"new matcher is created: {matcher}")
         # logging.debug(f"matching this: {pattern}")
         # logging.debug(f"matching this: {pattern.graph}")
 
