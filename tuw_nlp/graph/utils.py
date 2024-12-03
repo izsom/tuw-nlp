@@ -254,9 +254,9 @@ class GraphFormulaPatternMatcher:
                                 break
                         else:
                             logging.info(f"before digrap_matcher: {graph.nodes=}")
-                            logging.info(f"before digrap_matcher: {nx.to_latex(graph)=}")
+                            # logging.info(f"before digrap_matcher: {graph.to_dot()=}")
                             logging.info(f"before digrap_matcher: {graph_to_pn(p)=}")
-                            logging.info(f"before digrap_matcher: {nx.to_latex(p)=}")
+                            # logging.info(f"before digrap_matcher: {p.to_dot()=}") # nx.to_latex(p)
                             logging.info(f"before digrap_matcher: {subgraphs=}")
                             logging.info(f"before digrap_matcher: {attrs=}")
                             if not self.digraph_matcher(graph, p, subgraphs, attrs):
