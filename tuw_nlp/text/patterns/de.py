@@ -9,6 +9,9 @@ ABBREV = [
     "bzw.",
     "Pkt.",
     "Dipl.-Ing.",
+    "gem.",
+    "Abs.",
+    "zB.",
 ]
 
 MONTH = [
